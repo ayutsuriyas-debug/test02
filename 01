@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LIFF PDF</title>
+
+<style>
+body {
+  font-family: Arial;
+  text-align: center;
+}
+
+#btn {
+  margin-top: 20px;
+  padding: 12px 20px;
+  background: #06c755;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="profile" style="display:none;">
+  <img id="pic" width="100"><br>
+  <b id="name"></b><br><br>
+
+  <button id="btn" onclick="getPDF()">
+    โหลด PDF ของฉัน
+  </button>
+</div>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+<script>
+let userId = "";
+
+async function main() {
+  await liff.init({ liffId: "2009703395-1h63EZsG" });
+
+  if (!liff.isLoggedIn()) {
+    liff.login();
+    return;
+  }
+
+  const profile = await liff.getProfile();
+
+  pic.src = profile.pictureUrl;
+  name.innerText = profile.displayName;
+  userId = profile.userId;
+
+  profile.style.display = "block";
+}
+
+async function getPDF() {
+  const FLOW_URL = "https://defaulta04e860ac51646ce9cc986b3a5588b.fe.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/883aa8a410fe45018f8ed1fba6eec711/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=cDKiub4M-rkaAAA_qQ23xzGPWBMF3SGPdU4M1qqfQgw";
+
+  const res = await fetch(FLOW_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      userId: userId
+    })
+  });
+
+  const data = await res.json();
+
+  if (data.pdfUrl) {
+    // 🔥 เปิด PDF
+    if (liff.isInClient()) {
+      liff.openWindow({
+        url: data.pdfUrl,
+        external: true
+      });
+    } else {
+      window.open(data.pdfUrl, "_blank");
+    }
+  } else {
+    alert("ไม่พบ PDF");
+  }
+}
+
+main();
+</script>
+
+</body>
+</html>
